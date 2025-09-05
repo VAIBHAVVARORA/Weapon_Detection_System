@@ -1,0 +1,6 @@
+django==5.0
+ultralytics==8.0.227
+
+
+
+

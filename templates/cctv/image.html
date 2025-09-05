@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500&family=Salsa&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/cctv/image.css">
+    <title>Intellgent Image Processing</title>
+    <style>
+        .image-container {
+            max-width: 100%;
+            max-height: 100%;
+            margin: auto;
+        }
+
+        .responsive-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Detect Weapons in Image / Video &sc; </h1> <br>
+    {% for image in images %}
+    <div>
+        <img src="{{ image.image.url }}" alt="Original Image">
+        {% if image.processed_image %}
+        <img src="{{ image.processed_image.url }}" alt="Processed Image">
+        {% else %}
+        <p>No processed image available</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <!-- Add your form for image uploading here -->
+    <form method="post" enctype="multipart/form-data" action="{% url 'image' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload Image</button>
+    </form>
+    {% if messages %}
+    {% for message in messages %}
+    <p {% if message.tags %} class="{{ message.tags }}" {% endif %} style="color: red;">
+        {{ message }} !
+    </p>
+    {% endfor %}
+    {% endif %}
+</body>
+
+</html>

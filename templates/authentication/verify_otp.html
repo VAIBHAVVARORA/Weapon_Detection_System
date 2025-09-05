@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email</title>
+</head>
+
+<body>
+    <h1>Verify Email</h1>
+    <p>Enter the OTP sent to your email address</p>
+    <form action="{% url 'verify_otp' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group mb-3">
+            <input type="text" name="otp" id="otp" placeholder="Enter OTP">
+            <input type="submit" value="Verify OTP" class="btn btn-lg">
+        </div>
+    </form>
+    {% if messages %}
+    {% for message in messages %}
+    <p {% if message.tags %} class="{{ message.tags }}" {% endif %} style="color: rgb(48, 230, 12);">
+        {{ message }} !
+    </p>
+    {% endfor %}
+    {% endif %}
+</body>
+
+</html>

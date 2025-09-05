@@ -1,0 +1,76 @@
+*{
+    font-family: 'Salsa', cursive;
+}
+
+body{
+    color: white;
+    text-align: center;
+    background-color: black;
+}
+
+.content{
+    margin: 1% 1% 1% 1%;
+    display: flex;
+    border-radius: 10px;
+}
+.image{
+    align-items: center;
+    width: 73%;
+    min-height: 60vh;
+    height: auto;
+    display: flex;
+    border: rgb(255, 255, 255) 2px solid;
+    /* box-shadow: rgb(255, 255, 255) 0px 0px 10px 0px; */
+}
+.info{
+    padding: 1% 1% 1% 1%;
+    background-color: #ffffff;
+    min-height: 30vh;
+    width: 30%;
+    color: black;
+    display: flex;
+    border: rgb(255, 255, 255) 2px solid;
+    /* box-shadow: rgb(255, 255, 255) 0px 0px 10px 0px; */
+
+}
+.bn632-hover {
+    font-family: 'Lora', serif;
+  font-family: 'Salsa', cursive;
+    /* font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; */
+    width: 110px;
+    font-size: 19px;
+    font-weight:800;
+    color: #000000;
+    cursor: pointer;
+    margin: 20px;
+    height: 40px;
+    text-align: center;
+    border: none;
+    background-size: 300% 100%;
+    border-radius: 50px;
+    -moz-transition: all .4s ease-in-out;
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+  }
+  
+  .bn632-hover:hover {
+    background-position: 100% 0;
+    -moz-transition: all .4s ease-in-out;
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+  }
+  
+  .bn632-hover:focus {
+    outline: none;
+  }
+  
+  .bn632-hover.bn19 {
+    background-image: linear-gradient(to right,
+        #f5ce62,
+        #e43603,
+        #fa7199,
+        #e85a19);
+    box-shadow: 0 4px 15px 0 rgba(229, 66, 10, 0.75);
+  }

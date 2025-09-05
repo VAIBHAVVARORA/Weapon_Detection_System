@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live CCTV FOOTAGE</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon_io/live.png">
+  <link rel="stylesheet" href="/static/cctv/home.css">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/about" target="_blank" rel="noopener noreferrer">AI-Alert System</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/home">Home</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Features
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/image" target="_blank" rel="noopener noreferrer">Image / Video</a>
+              </li>
+              <!-- <li><a class="dropdown-item" href="/video" target="_blank" rel="noopener noreferrer">Video</a></li> -->
+              <!-- <li><a class="dropdown-item" href="/webcam">Webcam</a></li> -->
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contact" target="_blank" rel="noopener noreferrer">Contact Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/delete_entry" target="_blank" rel="noopener noreferrer">Delete Account</a>
+          </li>
+        </ul>
+        <button type="submit" href="signout" class="btn btn-outline-success">
+          <a href="signout" style="color: inherit; text-decoration: none;">Logout</a>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="content">
+    <!-- <div class="cctv"><video src="/static/footage/cctv1.mp4" controls></video></div> -->
+    <div class="cctv">
+      <video id="videoElement" autoplay></video>
+    </div>
+
+
+    &nbsp;&nbsp;&nbsp;
+    <div class="alertmessage">
+      <form action="" method="post">
+        {% csrf_token %}
+        <h3>Alert Messages !</h3>
+        <input type="submit" value="Send" style="width: 50px; height: 25px; font-size: 15px;">
+      </form> <br> <br>
+      {% if messages %}
+      {% for message in messages %}
+      <div {% if message.tags %} class="{{ message.tags }}" {% endif %} style="color: rgb(0, 0, 0);">
+        {{ message }} !
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
+  <script src="/static/cctv/home.js"></script>
+</body>
+
+</html>
