@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.cache import cache_control
 import ssl,smtplib,random
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Create your views here.
 
@@ -39,24 +41,18 @@ def signup(request):
             'password': password,
             'otp' : otp
         }
-            email_sender = 'namdev2003satyam@gmail.com'
-            email_password = 'erfjrmiajuyglgqf'
+            email_from = settings.EMAIL_HOST_USER
             email_receiver = email
 
             subject = 'Verify Email!'
             body_content = f'Your One time password for Registration in ArgusVision is : {otp}. '
-
-            em = EmailMessage()
-            em['From'] = email_sender
-            em['To'] = email_receiver
-            em['Subject'] = subject
-            em.set_content(body_content)
-
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-                smtp.login(email_sender,email_password)
-                smtp.sendmail(email_sender,email_receiver,em.as_string())
-            messages.success(request, 'Email sent successfully !')
+            recipient_list = [email, ]
+            
+            try:
+                send_mail( subject, body_content, email_from, recipient_list )
+                messages.success(request, 'Email sent successfully !')
+            except Exception as e:
+                messages.error(request, f'Error sending email: {e}')
             
             return render(request, 'authentication/verify_otp.html')
 
@@ -130,24 +126,18 @@ def password_reset(request):
         if form.is_valid() and form.cleaned_data['email'] != '' and User.objects.filter(email=form.cleaned_data['email']).exists():
             
             otp = str(random.randint(100000, 999999))
-            email_sender = 'namdev2003satyam@gmail.com'
-            email_password = 'erfjrmiajuyglgqf'
+            email_from = settings.EMAIL_HOST_USER
             email_receiver = request.POST['email']
 
             subject = 'PASSWORD RESET'
             body_content = f'Your One time password for PASSWORD RESET in ArgusVision is : {otp}. '
+            recipient_list = [email_receiver, ]
 
-            em = EmailMessage()
-            em['From'] = email_sender
-            em['To'] = email_receiver
-            em['Subject'] = subject
-            em.set_content(body_content)
-
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-                smtp.login(email_sender,email_password)
-                smtp.sendmail(email_sender,email_receiver,em.as_string())
-            messages.success(request, 'Password reset email sent successfully. Check your mail for OTP.')
+            try:
+                send_mail( subject, body_content, email_from, recipient_list )
+                messages.success(request, 'Password reset email sent successfully. Check your mail for OTP.')
+            except Exception as e:
+                messages.error(request, f'Error sending email: {e}')
 
             user = User.objects.filter(email=form.cleaned_data['email'])        
             user.password = make_password(otp)

@@ -11,6 +11,7 @@ urlpatterns = [
     path("image", views.image, name='image'),
     path("about", views.about, name='about'),
     path("delete_image", views.delete_image, name='delete_image'),
+    path('webcam', views.webcam, name='webcam'),
 ]
 
 if settings.DEBUG:

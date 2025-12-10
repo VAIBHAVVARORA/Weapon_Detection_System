@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Webcam - ArgusVision{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 text-center">
+        <div class="glass-card py-5">
+            <h1 class="display-4 mb-3">Live Webcam Feed</h1>
+            <p class="lead text-secondary mb-5">Integrate your local camera for real-time detection.</p>
+
+            <div class="video-container bg-black d-flex align-items-center justify-content-center mb-4"
+                style="height: 480px;">
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted">Connecting to camera source...</p>
+                </div>
+                <!-- Actual video element would go here -->
+                <!-- <video id="webcam" autoplay playsinline></video> -->
+            </div>
+
+            <a href="{% url 'home' %}" class="btn btn-outline-light">Return to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,56 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500&family=Salsa&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/cctv/image.css">
-    <title>Intellgent Image Processing</title>
-    <style>
-        .image-container {
-            max-width: 100%;
-            max-height: 100%;
-            margin: auto;
-        }
+{% block title %}Analyze Image - ArgusVision{% endblock %}
 
-        .responsive-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            margin: auto;
-        }
-    </style>
-</head>
+{% block content %}
+<div class="row">
+    <!-- Upload Section -->
+    <div class="col-lg-5 mb-4">
+        <div class="glass-card">
+            <h2 class="mb-4">Upload Media</h2>
+            <form action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="id_image" class="form-label">Select Image or Video</label>
+                    {{ form.as_p }}
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                        <span class="spinner-border spinner-border-sm d-none" id="analyzeSpinner" role="status"
+                            aria-hidden="true"></span>
+                        <span id="analyzeText">Analyze Now</span>
+                    </button>
+                    <!-- Delete Button using a separate form logic or just a link disguised as button -->
+                </div>
+            </form>
 
-<body>
-    <h1>Detect Weapons in Image / Video &sc; </h1> <br>
-    {% for image in images %}
-    <div>
-        <img src="{{ image.image.url }}" alt="Original Image">
-        {% if image.processed_image %}
-        <img src="{{ image.processed_image.url }}" alt="Processed Image">
-        {% else %}
-        <p>No processed image available</p>
-        {% endif %}
+            <script>
+                document.querySelector('form[enctype="multipart/form-data"]').addEventListener('submit', function () {
+                    const btn = document.getElementById('analyzeBtn');
+                    const spinner = document.getElementById('analyzeSpinner');
+                    const text = document.getElementById('analyzeText');
+
+                    btn.disabled = true;
+                    spinner.classList.remove('d-none');
+                    text.textContent = 'Processing...';
+                });
+            </script>
+
+            <form action="{% url 'delete_image' %}" method="post" class="mt-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100">Clear All History</button>
+            </form>
+        </div>
     </div>
-    {% endfor %}
 
-    <!-- Add your form for image uploading here -->
-    <form method="post" enctype="multipart/form-data" action="{% url 'image' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Upload Image</button>
-    </form>
-    {% if messages %}
-    {% for message in messages %}
-    <p {% if message.tags %} class="{{ message.tags }}" {% endif %} style="color: red;">
-        {{ message }} !
-    </p>
-    {% endfor %}
-    {% endif %}
-</body>
-
-</html>
+    <!-- Results Section -->
+    <div class="col-lg-7">
+        <div class="glass-card">
+            <h3 class="mb-4">Analysis Results</h3>
+            {% if images %}
+            <div class="row g-3">
+                {% for i in images %}
+                <div class="col-md-6">
+                    <div class="card bg-transparent border-0">
+                        {% if i.processed_image %}
+                        <div class="position-relative">
+                            <img src="{{ i.processed_image.url }}" class="img-fluid rounded border border-secondary"
+                                alt="Processed Result">
+                            <div
+                                class="position-absolute bottom-0 start-0 w-100 bg-dark bg-opacity-75 text-white p-1 text-center small rounded-bottom">
+                                Processed: <span class="fw-bold text-info">{{ i.prediction|default:"" }}</span>
+                            </div>
+                        </div>
+                        {% elif i.image %}
+                        <div class="position-relative">
+                            <img src="{{ i.image.url }}" class="img-fluid rounded border border-secondary"
+                                alt="Original Upload">
+                            <div
+                                class="position-absolute bottom-0 start-0 w-100 bg-secondary bg-opacity-75 text-white p-1 text-center small rounded-bottom">
+                                Original (Waiting)
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-secondary">
+                <p class="mb-0">No images processed yet. Upload one to start.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

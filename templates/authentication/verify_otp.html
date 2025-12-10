@@ -1,29 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email</title>
-</head>
+{% block title %}Verify OTP - ArgusVision{% endblock %}
 
-<body>
-    <h1>Verify Email</h1>
-    <p>Enter the OTP sent to your email address</p>
-    <form action="{% url 'verify_otp' %}" method="post">
-        {% csrf_token %}
-        <div class="input-group mb-3">
-            <input type="text" name="otp" id="otp" placeholder="Enter OTP">
-            <input type="submit" value="Verify OTP" class="btn btn-lg">
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-card">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Verify Email</h2>
+                <p class="text-secondary">Enter the One-Time Password sent to your email</p>
+            </div>
+
+            <form action="{% url 'verify_otp' %}" method="post">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label">Enter OTP</label>
+                    <input type="text" name="otp" id="otp"
+                        class="form-control form-control-lg text-center letter-spacing-2" placeholder="XXXXXX"
+                        maxlength="6" required style="letter-spacing: 0.5em; font-size: 1.5rem;">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Verify Account</button>
+                </div>
+            </form>
         </div>
-    </form>
-    {% if messages %}
-    {% for message in messages %}
-    <p {% if message.tags %} class="{{ message.tags }}" {% endif %} style="color: rgb(48, 230, 12);">
-        {{ message }} !
-    </p>
-    {% endfor %}
-    {% endif %}
-</body>
-
-</html>
+    </div>
+</div>
+{% endblock %}

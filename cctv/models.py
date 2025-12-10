@@ -6,45 +6,91 @@ from PIL import Image
 import os
 import sys
 
+from django.conf import settings
+
+# Global model loader to improve performance
+# We use a lazy loading pattern or just load it once if possible
+# But given the monkeypatch requirement, we need to apply it once globally or safely here
+
+import torch
+from ultralytics import YOLO
+
+# Global variable to store the model
+_YOLO_MODEL = None
+
+def get_yolo_model():
+    global _YOLO_MODEL
+    if _YOLO_MODEL is None:
+        # Monkeypatch torch.load to default weights_only=False
+        original_load = torch.load
+        try:
+            torch.load = lambda *args, **kwargs: original_load(*args, **kwargs | {'weights_only': False})
+            _YOLO_MODEL = YOLO('best.pt')
+        finally:
+            torch.load = original_load
+    return _YOLO_MODEL
+
 class CCTVImage(models.Model):
-    image = models.ImageField(upload_to='cctv/images/')
+    image = models.FileField(upload_to='cctv/images/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    processed_image = models.ImageField(upload_to='cctv/processed_images/', blank=True, null=True)
-    # Add any additional fields you need for your application
+    processed_image = models.FileField(upload_to='cctv/processed_images/', blank=True, null=True)
+    prediction = models.CharField(max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Override the save method to process the image before saving
-        self.process_image()
         super().save(*args, **kwargs)
+        if not self.processed_image:
+            try:
+                self.process_image()
+            except Exception as e:
+                print(f"Error processing media: {e}")
 
     def process_image(self):
-        # Save the processed image
-        model = YOLO('best.pt')
-        img_count = 0
-        image_paths = []
-        image_directory = "E:\\Django\Weapon-Detection-Web-App\media\cctv\images" 
-        for filename in os.listdir(image_directory):
-            if filename.endswith(".jpg") or filename.endswith(".JPG") or filename.endswith(".jpeg") or filename.endswith(".png"):
-                image_paths.append(os.path.join(image_directory, filename))
-                img_count += 1
+        try:
+            model = get_yolo_model()
+        except Exception as e:
+            print(f"Model load error: {e}")
+            return
+        
+        if not self.image:
+            return
 
-        print(f'Total number of images in the folder {image_directory} : ',img_count)
-
-        count = 0
-        for i in image_paths:
-            results = model(i) 
-            count += 1
-            for r in results:
-                im_array = r.plot() 
-                im = Image.fromarray(im_array[..., ::-1])  
-                im.save(f'E:\\Django\Weapon-Detection-Web-App\media\cctv\processed_images\{count}.jpg')  
-                # processed_image_path = f'E:\\Django\Weapon-Detection-Web-App\media\cctv\processed_images\{count}.jpg'
-                # self.processed_image = processed_image_path       
-                # self.processed_image.save('processed_image.jpg', self.image, save=False)
+        media_path = self.image.path
+        filename = os.path.basename(media_path)
+        ext = os.path.splitext(filename)[1].lower()
+        
+        detected_classes = []
+        
+        # Only process images
+        image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
+        if ext in image_extensions:
+            results = model(media_path)
             
-            # Assign the processed image path to the processed_image field
+            for r in results:
+                for c in r.boxes.cls:
+                    detected_classes.append(model.names[int(c)])
+                
+                im_array = r.plot()
+                im = Image.fromarray(im_array[..., ::-1])
+                
+                processed_filename = f"processed_{filename}"
+                processed_dir = os.path.join(settings.MEDIA_ROOT, 'cctv', 'processed_images')
+                os.makedirs(processed_dir, exist_ok=True)
+                
+                processed_path = os.path.join(processed_dir, processed_filename)
+                im.save(processed_path)
+                
+                self.processed_image.name = os.path.join('cctv', 'processed_images', processed_filename)
+        else:
+            print(f"Skipping non-image file: {filename}")
+            
+        # Update predictions
+        if detected_classes:
+            self.prediction = ", ".join(list(set(detected_classes)))
+        else:
+            self.prediction = "No detections"
+            
+        super().save(update_fields=['processed_image', 'prediction'])
 
-        #self.processed_image = im.save(f'E:\\Django\Weapon-Detection-Web-App\media\cctv\processed_images\{count}.jpg')
 
 
 

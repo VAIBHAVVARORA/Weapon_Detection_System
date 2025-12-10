@@ -3,9 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from cctv.forms import ImageUploadForm
 from cctv.models import CCTVImage
-from email.message import EmailMessage 
-import ssl
-import smtplib
 # Create your views here.
 
 
@@ -21,49 +18,69 @@ def contact(request):
 
 @login_required(login_url='signin')
 def webcam(request):
-    return render(request, 'webcam.py')
+    return render(request, 'cctv/webcam.html')
 
 
+
+from django.core.mail import send_mail
+from django.conf import settings
 
 @login_required(login_url='signin')
 def home(request):
     email = request.user.email
     if request.method == 'POST':    
-        email_sender = 'namdev2003satyam@gmail.com'
-        email_password = 'erfjrmiajuyglgqf'
-        email_receiver = email
-
         subject = 'Alert Mail!'
         body_content = 'This is a test email from Weapon Detection System'
-
-        em = EmailMessage()
-        em['From'] = email_sender
-        em['To'] = email_receiver
-        em['Subject'] = subject
-        em.set_content(body_content)
-
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-            smtp.login(email_sender,email_password)
-            smtp.sendmail(email_sender,email_receiver,em.as_string())
-        messages.success(request, 'Email sent successfully !')
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [email, ]
+        
+        try:
+            send_mail( subject, body_content, email_from, recipient_list )
+            messages.success(request, 'Email sent successfully !')
+        except Exception as e:
+            messages.error(request, f'Error sending email: {e}')
     return render(request, 'cctv/home.html')
 
 
 
+from django.views.decorators.cache import never_cache
+
+@never_cache
 @login_required(login_url='signin')
 def image(request):
     if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            instance = form.save()
+            
+            # Check for detections and send email
+            if instance.prediction and instance.prediction != "No detections":
+                subject = 'WEAPON DETECTED ALERT!'
+                email_from = settings.EMAIL_HOST_USER
+                email_to = [request.user.email]
+                
+                body = f"""
+                ALERT: A weapon has been detected in an uploaded image.
+                
+                Detected Item(s): {instance.prediction}
+                Time: {instance.uploaded_at}
+                User: {request.user.username}
+                
+                Please take immediate action.
+                """
+                
+                try:
+                    send_mail(subject, body, email_from, email_to, fail_silently=False)
+                    messages.warning(request, f'Weapon Detected! Alert email sent to {request.user.email}')
+                except Exception as e:
+                    messages.error(request, f'Weapon Detected but failed to send email: {e}')
+            
             return redirect('image')
     else:
         form = ImageUploadForm()
         
-    images = CCTVImage.objects.all()
-
-    processed_images = CCTVImage.objects.filter(processed_image__isnull=False)
+    # Show all images, ordered by newest first
+    processed_images = CCTVImage.objects.filter(processed_image__isnull=False).order_by('-uploaded_at')
     
     context = {'images': processed_images, 'form': form}
     return render(request, 'cctv/image.html', context)
